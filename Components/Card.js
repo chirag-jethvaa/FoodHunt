@@ -127,7 +127,7 @@ class Card extends Component {
           <View
             style={{
               flex: 1,
-              backgroundColor: "#00000020",
+              backgroundColor: "#00000040",
               borderTopLeftRadius: 15,
               borderTopRightRadius: 15,
               borderBottomLeftRadius: 15,

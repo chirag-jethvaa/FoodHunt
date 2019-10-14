@@ -8,31 +8,26 @@ import {
   TouchableOpacity,
   Image,
   StatusBar,
-  AsyncStorage
+  AsyncStorage,
+  ToastAndroid
 } from "react-native";
 import Carousel, { ParallaxImage } from "react-native-snap-carousel";
 import { RFValue } from "react-native-responsive-fontsize";
 import { Searchbar } from "react-native-paper";
-
-import Card from "../Components/Card";
-import Text from "../data/customText";
 import LottieView from "lottie-react-native";
 import * as firebase from "firebase";
 import Modal from "react-native-modal";
+import * as Permissions from "expo-permissions";
+import * as Location from "expo-location";
 
+import Card from "../Components/Card";
+import Text from "../data/customText";
 const { height, width } = Dimensions.get("window");
 
 const SLIDERHEIGHT = (3 * height) / 9;
 const SEARCHBARHEIGHT = height / 15 + 5;
 
-// const ds = new ListView.DataSource({
-//   rowHasChanged: (r1, r2) => {
-//     if (r1.name !== r2.name) {
-//       return true;
-//     }
-//   }
-// });
-export default class ScrollSwagger extends Component {
+export default class HomeScreen extends Component {
   constructor(props) {
     super(props);
 
@@ -45,7 +40,10 @@ export default class ScrollSwagger extends Component {
       scrollY: new Animated.Value(0),
       searchResult: [],
       topViews: [],
-      isFilterVisible: false
+      isFilterVisible: false,
+      isLocationModalVisible: false,
+      coords: null,
+      isLocationEnabled: false
     };
   }
 
@@ -59,12 +57,33 @@ export default class ScrollSwagger extends Component {
     });
   };
 
-  _storeData = async (key, value) => {
-    // try {
-    // await AsyncStorage.setItem(key, value);
-    // } catch (error) {
-    // Error saving data
-    // }
+  sortDist = data => {
+    return data.sort((a, b) => {
+      if (b.dist < a.dist) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+  };
+
+  _getLocationAsync = async () => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== "granted") {
+      // this.setState({
+      //   errorMessage: "Permission to access location was denied"
+      // });
+      ToastAndroid.show("Access Denied", ToastAndroid.SHORT);
+    }
+
+    let location = await Location.getCurrentPositionAsync({});
+    this.setState({ coords: location.coords });
+    // console.log(
+    //   "Lat",
+    //   location.coords.latitude,
+    //   "  Long",
+    //   location.coords.longitude
+    // );
   };
 
   async componentDidMount() {
@@ -124,7 +143,8 @@ export default class ScrollSwagger extends Component {
               address: element.address,
               avgCost: element.avgCost,
               views: element.views,
-              fav: fav.includes(element.Credentials.mid) ? true : false
+              fav: fav.includes(element.Credentials.mid) ? true : false,
+              coords: element.coords
             });
           }
           // console.log(te);
@@ -136,68 +156,85 @@ export default class ScrollSwagger extends Component {
           // let data = ds.cloneWithRows(te);
           // this._storeData("messData", te);
           await AsyncStorage.setItem("messData", JSON.stringify(te));
-          this.setState({
-            data: te,
-            messData: te,
-            topViews: topViews,
-            isModalVisible: false
-          });
+          if (this.state.isLocationEnabled === true) {
+            this.onPressLocation(true);
+            this.setState({
+              topViews: topViews,
+              isModalVisible: false
+            });
+          } else {
+            this.setState({
+              data: te,
+              messData: te,
+              topViews: topViews,
+              isModalVisible: false
+            });
+          }
+
           // console.log("MessData ", this.state.messData);
         }.bind(this)
       );
   }
 
-  // componentWillUnmount() {
-  //   this.setState({
-  //     isModalVisible: false
-  //   });
-  // }
-
   searchAction = query => {
     let searchResult = this.state.data.filter(item => {
       return item.name.includes(query);
     });
-    // console.log(searchResult);
-    // this.setState({
-    //   messData: ds.cloneWithRows([])
-    // });
     this.setState({
       messData: searchResult
     });
-    // console.log(this.state.messData.getRowData);
-    // this.setState({
-    // });
+  };
+
+  calcDistance(lat1, lon1, lat2, lon2) {
+    if (lat1 == lat2 && lon1 == lon2) {
+      return 0;
+    } else {
+      var radlat1 = (Math.PI * lat1) / 180;
+      var radlat2 = (Math.PI * lat2) / 180;
+      var theta = lon1 - lon2;
+      var radtheta = (Math.PI * theta) / 180;
+      var dist =
+        Math.sin(radlat1) * Math.sin(radlat2) +
+        Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+      if (dist > 1) {
+        dist = 1;
+      }
+      dist = Math.acos(dist);
+      dist = (dist * 180) / Math.PI;
+      dist = dist * 60 * 1.1515;
+      return dist;
+    }
+  }
+
+  onPressLocation = async permit => {
+    if (permit === true) {
+      await this._getLocationAsync();
+      // console.log("From State: ", this.state.coords);
+      let newData = [];
+      for (k in this.state.messData) {
+        let item = this.state.messData[k];
+        // console.log(item);
+        item["dist"] = this.calcDistance(
+          this.state.coords.latitude,
+          this.state.coords.longitude,
+          item.coords.lat,
+          item.coords.lon
+        );
+        newData.push(item);
+      }
+      this.sortDist(newData);
+      // console.log(newData);
+      this.setState({
+        messData: newData
+      });
+    } else if (permit === false) {
+      // ToastAndroid.show("Access denied");
+    }
+    this.setState({ isLocationModalVisible: false });
   };
 
   toggleModal = () => {
     this.setState({ isModalVisible: !this.state.isModalVisible });
-  };
-
-  // renderRow = () => {
-  //   this.state.messData.map((rowData, key) => {
-  //     console.log("rowData", rowData);
-  //     return (
-  //       <TouchableOpacity
-  //         onPress={() => {
-  //           this.props.navigation.navigate("MessDetail", { mess: rowData });
-  //         }}
-  //       >
-  //         <Card liked={false} messData={rowData} />
-  //       </TouchableOpacity>
-  //     );
-  //   });
-  // };
-
-  _renderFilter = () => {
-    return (
-      <View style={{ height: "100%", width: "100%" }}>
-        <View>
-          <TouchableOpacity>
-            <Text></Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
   };
 
   _renderItem = ({ item, index }, parallaxProps) => {
@@ -355,6 +392,7 @@ export default class ScrollSwagger extends Component {
                 flex: 1,
                 flexDirection: "row",
                 // backgroundColor: "white",
+                justifyContent: "space-around",
                 borderRadius: searchCorner,
                 margin: 5,
                 marginHorizontal: searchMarginH
@@ -369,7 +407,7 @@ export default class ScrollSwagger extends Component {
                 }}
                 value={this.state.searchQuery}
               />
-              {/* <View
+              <View
                 style={{
                   flex: 1,
                   marginHorizontal: 10
@@ -395,17 +433,112 @@ export default class ScrollSwagger extends Component {
                     elevation: 11
                   }}
                   onPress={() => {
-                    this.setState({ isFilterVisible: true });
+                    this.setState({ isLocationModalVisible: true });
                   }}
                 >
                   <Image
                     style={{ height: 30, width: 30 }}
-                    source={require("../assets/filter.png")}
+                    source={require("../assets/location.png")}
                   />
                 </TouchableOpacity>
-              </View> */}
+              </View>
             </Animated.View>
           </Animated.View>
+          <Modal
+            isVisible={this.state.isLocationModalVisible}
+            backdropColor="#000"
+            backdropOpacity={0.8}
+            animationIn="zoomInDown"
+            animationOut="zoomOutUp"
+            animationInTiming={600}
+            animationOutTiming={600}
+            backdropTransitionInTiming={800}
+            backdropTransitionOutTiming={800}
+            style={{
+              justifyContent: "center",
+              alignItems: "center"
+            }}
+            onBackButtonPress={() => {
+              this.setState({
+                isLocationModalVisible: false
+              });
+            }}
+            onDismiss={() => {
+              this.setState({
+                isLocationModalVisible: false
+              });
+            }}
+            onBackdropPress={() => {
+              this.setState({
+                isLocationModalVisible: false
+              });
+            }}
+          >
+            <View
+              style={{
+                // height: 400,
+                // width: 400,
+                backgroundColor: "white",
+                borderRadius: 10,
+                justifyContent: "center",
+                alignItems: "center",
+                borderColor: "rgba(0, 0, 0, 0.1)",
+                padding: 15
+              }}
+            >
+              <Text style={{ fontSize: 20, textAlign: "center" }}>
+                {"Are you sure you want to sort mess by your nearest location?"}
+              </Text>
+              <View
+                style={{
+                  width: width - 60,
+                  flexDirection: "row",
+                  justifyContent: "space-around",
+                  alignItems: "center",
+                  // backgroundColor: "yellow",
+                  paddingTop: 10,
+                  marginTop: 10
+                }}
+              >
+                <TouchableOpacity
+                  onPress={() => {
+                    this.setState({
+                      isLocationEnabled: true
+                    });
+                    this.onPressLocation(true);
+                  }}
+                  style={{
+                    backgroundColor: "#6E3596",
+                    paddingHorizontal: 6,
+                    paddingVertical: 2,
+                    borderRadius: 5,
+                    justifyContent: "center",
+                    alignItems: "center"
+                  }}
+                >
+                  <Text style={{ fontSize: 20, color: "white" }}>Yes</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    this.setState({
+                      isLocationEnabled: false
+                    });
+                    this.onPressLocation(false);
+                  }}
+                  style={{
+                    backgroundColor: "#E71949",
+                    paddingHorizontal: 6,
+                    paddingVertical: 2,
+                    borderRadius: 5,
+                    justifyContent: "center",
+                    alignItems: "center"
+                  }}
+                >
+                  <Text style={{ fontSize: 20, color: "white" }}>No</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
           {this.state.isModalVisible ? (
             <Modal
               isVisible={this.state.isModalVisible}
@@ -431,7 +564,6 @@ export default class ScrollSwagger extends Component {
           ) : (
             <View />
           )}
-          
         </ImageBackground>
       </View>
     );

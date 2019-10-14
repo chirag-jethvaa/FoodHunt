@@ -134,7 +134,7 @@ class Developers extends Component {
                 // textAlign: "center"
               }}
             >
-              {name}
+              {name + ""}
             </Text>
           </View>
           {/* ButtonContainer */}
@@ -203,11 +203,26 @@ class Developers extends Component {
             "Harsh Jobanputra",
             "https://firebasestorage.googleapis.com/v0/b/foodhunt-3c6a4.appspot.com/o/profile%2Fharsh.jpg?alt=media&token=a689c3dd-0864-4d08-897b-0d7a7f705716"
           )}
-          {this._renderCard("Karan Kathiriya", "")}
-          {this._renderCard("Manan Gadhiya", "")}
-          {this._renderCard("Vidhya Kothadiya", "")}
-          {this._renderCard("Chirag Jethva", "")}
-          {this._renderCard("Riya Intwala", "")}
+          {this._renderCard(
+            "Karan Kathiriya",
+            "https://firebasestorage.googleapis.com/v0/b/foodhunt-3c6a4.appspot.com/o/profile%2FIMG_20191011_100339.jpeg?alt=media&token=f5777f85-577f-447d-b05a-7764d98ff88f"
+          )}
+          {this._renderCard(
+            "Manan Gadhiya",
+            "https://avatarfiles.alphacoders.com/121/121391.jpg"
+          )}
+          {this._renderCard(
+            "Vidhya Kothadiya",
+            "https://firebasestorage.googleapis.com/v0/b/foodhunt-3c6a4.appspot.com/o/profile%2FIMG_20191011_100836.jpeg?alt=media&token=6d39676e-6952-4e94-8dd4-b18f11e63988"
+          )}
+          {this._renderCard(
+            "Chirag Jethva",
+            "https://firebasestorage.googleapis.com/v0/b/foodhunt-3c6a4.appspot.com/o/profile%2FLRM_EXPORT_3886907778721_20191006_203336756.jpeg?alt=media&token=74901ecd-5bde-40c9-9c43-b58d49f41d43"
+          )}
+          {this._renderCard(
+            "Riya Intwala",
+            "https://firebasestorage.googleapis.com/v0/b/foodhunt-3c6a4.appspot.com/o/profile%2FIMG_20190417_160840.jpeg?alt=media&token=5294dd92-f3a0-471b-ad55-3c0fd40745e9"
+          )}
         </ScrollView>
       </View>
     );

@@ -96,6 +96,7 @@ class Favourites extends Component {
             return (
               <TouchableOpacity
                 key={rowData.name}
+                activeOpacity={1}
                 onPress={() => {
                   this.props.navigation.navigate("MessDetail", {
                     mess: rowData

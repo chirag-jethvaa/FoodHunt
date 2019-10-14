@@ -9,7 +9,7 @@ import {
 import FoodHunt from "./FoodHunt";
 import * as Font from "expo-font";
 import * as firebase from "firebase";
-// import HomeScreen from "./Screens/HomeScreen2";
+
 
 import firebaseConfig from "./data/config";
 if (!firebase.apps.length) {
@@ -25,9 +25,10 @@ class App extends Component {
   }
 
   async componentDidMount() {
+    // this._getLocationAsync();
     console.ignoredYellowBox = ["Setting a timer"];
     await Font.loadAsync({
-      Nuni: require("./assets/fonts/Nunito-Regular.ttf")
+      Nuni: require("./assets/fonts/BeVietnam-Regular.ttf")
     });
     this.setState({
       isLoading: false

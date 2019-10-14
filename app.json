@@ -14,7 +14,7 @@
     "orientation": "portrait",
     "icon": "./assets/posterSquare.png",
     "splash": {
-      "image": "./assets/foodHuntLogo.png",
+      "image": "./assets/logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -30,7 +30,12 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "foodhunt.charusat.harsh2201"
+      "package": "foodhunt.charusat.harsh2201",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBFTUhD6pxX2i5Niq4YGrccer_lCVBnFrQ"
+        }
+      }
     },
     "description": "",
     "githubUrl": "https://github.com/harsh2201/FoodHunt"
