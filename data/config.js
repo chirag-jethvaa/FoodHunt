@@ -1,3 +1,4 @@
+// Don't worry the project isn't live and nor is the Firebase Project linked to billing account so enjoy using the API keys😁
 export default firebaseConfig = {
   apiKey: "AIzaSyAkQ4M4birpc32oGdvHU3hbr7zdfCtpVrc",
   authDomain: "foodhunt-3c6a4.firebaseapp.com",
